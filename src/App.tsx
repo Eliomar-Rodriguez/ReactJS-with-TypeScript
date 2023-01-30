@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Interface } from 'readline';
+import { CLIENT_RENEG_LIMIT } from 'tls';
 import './App.css';
 import Form from './components/Form';
 import List from './components/List';
@@ -11,17 +12,6 @@ interface AppState {
   newSubsNumber: number
 }
 
-const INITIAL_STATE = [{
-  nick: 'dapelu',
-  subMonths: 3,
-  avatar: 'https://i.pravatar.cc/150?u=dapelu',
-  description: 'Dapelu hace de moderador a veces'
-}, {
-  nick: 'sergio_serrano ',
-  subMonths: 7,
-  avatar: 'https://i.pravatar.cc/150?u=sergio_serrano',
-},]
-
 
 function App() {
   const [subs, setSubs] = useState<AppState["subs"]>([]) // set data type useState<number | string>
@@ -29,17 +19,24 @@ function App() {
   const divRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setSubs(INITIAL_STATE)
+    fetch('http://locahost:3001/subs')
+      .then(resp => resp.json())
+      .then(subs => {
+        console.log(subs)
+        setSubs(subs)
+      })
   }, [])
 
   const handleNewSub = (newSub: Sub): void => {
     setSubs(subs => [...subs, newSub])
+    setNewSubsNumber(n => n + 1)
   }
 
   return (
     <div className="App" ref={divRef}>
       <h1>mis subs</h1>
       <List subs={subs} />
+      New subs: {newSubsNumber}
       <Form onNewSub={handleNewSub} />
     </div>
   );
