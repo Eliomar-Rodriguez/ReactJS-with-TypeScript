@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Interface } from 'readline';
-import { CLIENT_RENEG_LIMIT } from 'tls';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import Form from './components/Form';
 import List from './components/List';
-import { Sub, SubsResponseFromApi } from './types';
+import { getAllSubs } from './services/getAllSubs';
+import { Sub } from './types';
 
 
 interface AppState {
@@ -14,32 +13,12 @@ interface AppState {
 
 
 function App() {
-  const [subs, setSubs] = useState<AppState["subs"]>([]) // set data type useState<number | string>
   const [newSubsNumber, setNewSubsNumber] = useState<AppState["newSubsNumber"]>(0)
   const divRef = useRef<HTMLDivElement>(null)
 
+  const [subs, setSubs] = useState<AppState["subs"]>([]) // set data type useState<number | string>
   useEffect(() => {
-    const fetchSubs = (): Promise<SubsResponseFromApi> => {
-      return fetch('http://locahost:3001/subs').then(resp => resp.json())
-    }
-
-    const mapFromApiToSubs = (apiResponse: SubsResponseFromApi): Array<Sub> => {
-      return apiResponse.map(subFromApi => {
-        const {
-          nick,
-          months: subMonths,
-          profileUrl: avatar,
-          description
-        } = subFromApi
-
-        return { nick, description, avatar, subMonths }
-      })
-    }
-
-    fetchSubs()
-      .then(mapFromApiToSubs)
-      .then(setSubs)
-
+    getAllSubs().then(setSubs)
   }, [])
 
   const handleNewSub = (newSub: Sub): void => {
