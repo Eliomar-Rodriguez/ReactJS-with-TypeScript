@@ -4,7 +4,7 @@ import { CLIENT_RENEG_LIMIT } from 'tls';
 import './App.css';
 import Form from './components/Form';
 import List from './components/List';
-import { Sub } from './types';
+import { Sub, SubsResponseFromApi } from './types';
 
 
 interface AppState {
@@ -19,12 +19,27 @@ function App() {
   const divRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetch('http://locahost:3001/subs')
-      .then(resp => resp.json())
-      .then(subs => {
-        console.log(subs)
-        setSubs(subs)
+    const fetchSubs = (): Promise<SubsResponseFromApi> => {
+      return fetch('http://locahost:3001/subs').then(resp => resp.json())
+    }
+
+    const mapFromApiToSubs = (apiResponse: SubsResponseFromApi): Array<Sub> => {
+      return apiResponse.map(subFromApi => {
+        const {
+          nick,
+          months: subMonths,
+          profileUrl: avatar,
+          description
+        } = subFromApi
+
+        return { nick, description, avatar, subMonths }
       })
+    }
+
+    fetchSubs()
+      .then(mapFromApiToSubs)
+      .then(setSubs)
+
   }, [])
 
   const handleNewSub = (newSub: Sub): void => {
